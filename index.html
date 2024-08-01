@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Póster PDF y Word</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 600px; margin: auto; padding: 20px; }
+        .preview { width: 100%; max-height: 300px; object-fit: contain; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generador de Póster PDF y Word</h1>
+        <input type="file" id="imageInput" accept="image/*">
+        <br><br>
+        <label for="pageCount">Número de páginas:</label>
+        <select id="pageCount">
+            <option value="1">1 Página</option>
+            <option value="2">2 Páginas</option>
+            <option value="3">3 Páginas</option>
+            <option value="4">4 Páginas</option>
+            <option value="5">5 Páginas</option>
+            <option value="6">6 Páginas</option>
+            <option value="7">7 Páginas</option>
+            <option value="8">8 Páginas</option>
+            <option value="9">9 Páginas</option>
+            <option value="10">10 Páginas</option>
+        </select>
+        <br><br>
+        <button id="generatePDF">Generar PDF</button>
+        <button id="generateWord">Generar Word</button>
+        <br><br>
+        <img id="preview" class="preview" src="" alt="Vista previa de la imagen">
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
