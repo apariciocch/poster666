@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Póster PDF y Word</title>
+    <title>Generador de Póster PDF</title>
     <style>
         body { font-family: Arial, sans-serif; }
         .container { max-width: 600px; margin: auto; padding: 20px; }
@@ -12,7 +12,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Generador de Póster PDF y Word</h1>
+        <h1>Generador de Póster PDF</h1>
         <input type="file" id="imageInput" accept="image/*">
         <br><br>
         <label for="pageCount">Número de páginas:</label>
@@ -29,13 +29,95 @@
             <option value="10">10 Páginas</option>
         </select>
         <br><br>
-        <button id="generatePDF">Generar PDF</button>
-        <button id="generateWord">Generar Word</button>
+        <button onclick="generatePDF()">Generar PDF</button>
         <br><br>
         <img id="preview" class="preview" src="" alt="Vista previa de la imagen">
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script type="module" src="main.js"></script>
+    <script>
+        document.getElementById('imageInput').addEventListener('change', previewImage);
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const pageCount = parseInt(document.getElementById('pageCount').value);
+            const imgData = document.getElementById('preview').src;
+
+            if (!imgData) {
+                alert("Por favor, suba una imagen primero.");
+                return;
+            }
+
+            const marginCm = 2;
+            const marginPx = marginCm * 28.35; // Conversión de cm a px (1 cm = 28.35 px)
+
+            const pdf = new jsPDF({
+                orientation: "portrait",
+                unit: "px",
+                format: [612, 792] // Tamaño A4 en pixeles
+            });
+
+            const img = new Image();
+            img.src = imgData;
+
+            img.onload = function() {
+                const imgWidth = img.width;
+                const imgHeight = img.height;
+                const aspectRatio = imgWidth / imgHeight;
+
+                const cols = Math.ceil(Math.sqrt(pageCount));
+                const rows = Math.ceil(pageCount / cols);
+
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+
+                const contentWidth = pageWidth - 2 * marginPx;
+                const contentHeight = pageHeight - 2 * marginPx;
+
+                const totalWidth = contentWidth * cols;
+                const totalHeight = contentHeight * rows;
+
+                const scale = Math.min(totalWidth / imgWidth, totalHeight / imgHeight);
+
+                const scaledWidth = imgWidth * scale;
+                const scaledHeight = imgHeight * scale;
+
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        const x = marginPx + col * contentWidth;
+                        const y = marginPx + row * contentHeight;
+
+                        if (row > 0 || col > 0) {
+                            pdf.addPage();
+                        }
+
+                        pdf.addImage(
+                            img,
+                            "JPEG",
+                            -col * contentWidth + marginPx,
+                            -row * contentHeight + marginPx,
+                            totalWidth,
+                            totalHeight,
+                            undefined,
+                            "FAST"
+                        );
+                    }
+                }
+
+                pdf.save("poster.pdf");
+            };
+        }
+    </script>
 </body>
 </html>
