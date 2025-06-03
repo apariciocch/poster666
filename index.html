@@ -4,45 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Póster PDF e Imágenes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #f0f0f0; /* Fondo gris claro */
-            color: #333; /* Texto gris oscuro */
-            margin: 0; 
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #ececec, #fafafa);
+            color: #333;
+            margin: 0;
             padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .container { 
-            max-width: 600px; 
-            margin: auto; 
-            padding: 20px; 
-            background-color: #fff; /* Fondo blanco para el contenedor */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
-            border-radius: 8px; /* Bordes redondeados */
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
         }
-        .preview { 
-            width: 100%; 
-            max-height: 300px; 
-            object-fit: contain; 
-            border: 1px solid #ddd; /* Borde gris claro */
-            border-radius: 4px; /* Bordes redondeados para la vista previa */
+        .preview {
+            width: 100%;
+            max-height: 320px;
+            object-fit: contain;
+            border: 1px solid #ccc;
+            border-radius: 6px;
         }
-        button { 
-            background-color: #007bff; /* Fondo azul */
-            color: #fff; /* Texto blanco */
-            border: none; 
-            padding: 10px 20px; 
-            margin: 5px; 
-            border-radius: 4px; /* Bordes redondeados */
-            cursor: pointer; 
+        button {
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px 2px;
+            border-radius: 6px;
+            cursor: pointer;
             font-size: 16px;
+            transition: background-color 0.3s;
         }
-        button:hover { 
-            background-color: #919191; /* Fondo azul oscuro al pasar el ratón */
+        button:hover {
+            background-color: #3568a3;
         }
         footer {
-            text-align: center; 
-            padding: 10px; 
+            text-align: center;
+            padding: 10px;
             background-color: #9a9a9a; /* Fondo azul */
             color: #d1d0d0; /* Texto blanco */
             position: fixed; 
@@ -56,20 +65,8 @@
         <h1>Generador de Póster PDF e Imágenes</h1>
         <input type="file" id="imageInput" accept="image/*">
         <br><br>
-        <label for="pageCount">Número de páginas:</label>
-        <select id="pageCount">
-            <option value="1">1 Página</option>
-            <option value="2">2 Páginas</option>
-            <option value="3">3 Páginas</option>
-            <option value="4">4 Páginas</option>
-            <option value="5">5 Páginas</option>
-            <option value="6">6 Páginas</option>
-            <option value="7">7 Páginas</option>
-            <option value="8">8 Páginas</option>
-            <option value="9">9 Páginas</option>
-            <option value="10">10 Páginas</option>
-        </select>
-        <br><br>
+        <p>La imagen se dividirá automáticamente en 4 páginas A4 con bordes de 1&nbsp;cm.</p>
+        <br>
         <button onclick="generatePDF()">Generar PDF</button>
         <button onclick="generateImages()">Generar Imágenes</button>
         <br><br>
@@ -97,7 +94,6 @@
 
         async function generatePDF() {
             const { jsPDF } = window.jspdf;
-            const pageCount = parseInt(document.getElementById('pageCount').value);
             const imgData = document.getElementById('preview').src;
 
             if (!imgData) {
@@ -105,7 +101,7 @@
                 return;
             }
 
-            const marginCm = 2;
+            const marginCm = 1;
             const marginPx = marginCm * 28.35; // Conversión de cm a px (1 cm = 28.35 px)
 
             const pdf = new jsPDF({
@@ -121,8 +117,8 @@
                 const imgWidth = img.width;
                 const imgHeight = img.height;
 
-                const cols = Math.ceil(Math.sqrt(pageCount));
-                const rows = Math.ceil(pageCount / cols);
+                const cols = 2;
+                const rows = 2;
 
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 const pageHeight = pdf.internal.pageSize.getHeight();
@@ -137,12 +133,11 @@
 
                 const scaledWidth = imgWidth * scale;
                 const scaledHeight = imgHeight * scale;
+                const xOffset = (totalWidth - scaledWidth) / 2;
+                const yOffset = (totalHeight - scaledHeight) / 2;
 
                 for (let row = 0; row < rows; row++) {
                     for (let col = 0; col < cols; col++) {
-                        const x = marginPx + col * contentWidth;
-                        const y = marginPx + row * contentHeight;
-
                         if (row > 0 || col > 0) {
                             pdf.addPage();
                         }
@@ -150,10 +145,10 @@
                         pdf.addImage(
                             img,
                             "JPEG",
-                            -col * contentWidth + marginPx,
-                            -row * contentHeight + marginPx,
-                            totalWidth,
-                            totalHeight,
+                            -col * contentWidth + marginPx + xOffset,
+                            -row * contentHeight + marginPx + yOffset,
+                            scaledWidth,
+                            scaledHeight,
                             undefined,
                             "FAST"
                         );
@@ -165,7 +160,6 @@
         }
 
         async function generateImages() {
-            const pageCount = parseInt(document.getElementById('pageCount').value);
             const imgData = document.getElementById('preview').src;
 
             if (!imgData) {
@@ -173,7 +167,7 @@
                 return;
             }
 
-            const marginCm = 2;
+            const marginCm = 1;
             const marginPx = marginCm * 28.35; // Conversión de cm a px (1 cm = 28.35 px)
 
             const img = new Image();
@@ -183,8 +177,8 @@
                 const imgWidth = img.width;
                 const imgHeight = img.height;
 
-                const cols = Math.ceil(Math.sqrt(pageCount));
-                const rows = Math.ceil(pageCount / cols);
+                const cols = 2;
+                const rows = 2;
 
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
@@ -202,6 +196,8 @@
 
                 const scaledWidth = imgWidth * scale;
                 const scaledHeight = imgHeight * scale;
+                const xOffset = (totalWidth - scaledWidth) / 2;
+                const yOffset = (totalHeight - scaledHeight) / 2;
 
                 canvas.width = contentWidth;
                 canvas.height = contentHeight;
@@ -211,10 +207,10 @@
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
                         ctx.drawImage(
                             img,
-                            -col * contentWidth + marginPx,
-                            -row * contentHeight + marginPx,
-                            totalWidth,
-                            totalHeight
+                            -col * contentWidth + marginPx + xOffset,
+                            -row * contentHeight + marginPx + yOffset,
+                            scaledWidth,
+                            scaledHeight
                         );
 
                         const link = document.createElement('a');
